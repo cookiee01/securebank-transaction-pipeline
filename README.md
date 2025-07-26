@@ -63,6 +63,12 @@ cp .env.example .env
 
 ### 3️⃣ Deploy Infrastructure
 ```bash
+# Quick deployment (recommended)
+chmod +x setup.sh quick-deploy.sh
+./setup.sh
+./quick-deploy.sh
+
+# OR manual deployment
 cd infra/terraform
 terraform init
 terraform plan
@@ -72,7 +78,10 @@ terraform apply
 ### 4️⃣ Test the Pipeline
 ```bash
 # Generate and send test transactions
-python scripts/load_test_data.py
+python data/generators/transaction_generator.py --count 100
+
+# Run load tests
+python tests/load/api_load_test.py --url YOUR_API_ENDPOINT --users 10
 
 # Monitor in CloudWatch
 aws logs tail /aws/lambda/transaction-processor --follow
@@ -82,12 +91,14 @@ aws logs tail /aws/lambda/transaction-processor --follow
 
 | Component | Status | Description |
 |-----------|---------|-------------|
-| 🏗️ **Infrastructure** | ✅ Ready | S3, DynamoDB, Kinesis, IAM configured |
-| ⚡ **Transaction Processor** | 🚧 In Progress | Lambda function for real-time processing |
-| 🛡️ **Fraud Detection** | 📋 Planned | ML-based fraud scoring algorithm |
-| 🌐 **API Gateway** | 📋 Planned | REST API for transaction submission |
-| 📈 **Analytics** | 📋 Planned | Athena queries and Redshift warehouse |
-| 🔍 **Monitoring** | 📋 Planned | CloudWatch dashboards and alerts |
+| 🏗️ **Infrastructure** | ✅ Complete | S3, DynamoDB, Kinesis, IAM configured |
+| ⚡ **Transaction Processor** | ✅ Complete | Lambda function for real-time processing |
+| 🛡️ **Fraud Detection** | ✅ Complete | Rule-based fraud scoring algorithm |
+| 🌐 **API Gateway** | ✅ Complete | REST API for transaction submission |
+| 📈 **Analytics** | ✅ Complete | Athena queries and data lake setup |
+| 🔍 **Monitoring** | ✅ Complete | CloudWatch dashboards and alerts |
+| 🧪 **Testing** | ✅ Complete | Load testing and data generation |
+| 📚 **Documentation** | ✅ Complete | Architecture, API, deployment guides |
 
 ## 🏛️ Architecture Components
 
@@ -117,39 +128,23 @@ securebank-transaction-pipeline/
 ├── 📄 README.md                    # This file
 ├── 📄 requirements.txt             # Python dependencies
 ├── 📄 .env.example                 # Environment variables template
+├── 📄 setup.sh                     # Environment setup script
+├── 📄 quick-deploy.sh              # One-click deployment
+├── 📄 lambda_function.py           # Core Lambda function
 ├── 📁 docs/                        # Documentation
 │   ├── 📄 ARCHITECTURE.md          # Detailed architecture guide
 │   ├── 📄 API_REFERENCE.md         # API documentation
 │   ├── 📄 DEPLOYMENT_GUIDE.md      # Step-by-step deployment
 │   └── 📄 PROJECT_STATUS.md        # Current project status
-├── 📁 infra/                       # Infrastructure as Code
-│   └── 📁 terraform/               # Terraform configurations
-│       ├── 📄 main.tf              # Main infrastructure
-│       ├── 📄 variables.tf         # Input variables
-│       └── 📄 outputs.tf           # Output values
-├── 📁 src/                         # Source code
-│   ├── 📁 lambda/                  # Lambda functions
-│   │   ├── 📁 transaction-processor/
-│   │   └── 📁 fraud-detector/
-│   ├── 📁 glue/                    # ETL jobs
-│   └── 📁 api/                     # API specifications
-├── 📁 data/                        # Data and generators
-│   ├── 📁 sample/                  # Sample datasets
-│   └── 📁 generators/              # Data generation scripts
-├── 📁 sql/                         # SQL queries
-│   ├── 📁 athena/                  # Athena table definitions
-│   └── 📁 redshift/                # Redshift schemas
-├── 📁 tests/                       # Test suites
-│   ├── 📁 unit/                    # Unit tests
-│   ├── 📁 integration/             # Integration tests
-│   └── 📁 load/                    # Load testing scripts
-├── 📁 scripts/                     # Utility scripts
-│   ├── 📄 deploy.sh                # Deployment automation
-│   ├── 📄 setup.sh                 # Environment setup
-│   └── 📄 load_test_data.py        # Test data generation
-└── 📁 monitoring/                  # Observability configs
-    ├── 📄 dashboards.json          # CloudWatch dashboards
-    └── 📄 alerts.json              # CloudWatch alarms
+├── 📁 .github/workflows/           # CI/CD Pipeline
+│   └── 📄 deploy.yml               # GitHub Actions workflow
+├── 📁 infra/terraform/             # Infrastructure as Code
+│   ├── 📄 main.tf                  # Main infrastructure
+│   └── 📄 variables.tf             # Input variables
+├── 📁 data/generators/             # Data generation
+│   └── 📄 transaction_generator.py # Realistic test data generator
+└── 📁 tests/load/                  # Load testing
+    └── 📄 api_load_test.py         # Comprehensive load testing
 ```
 
 ## 🧪 Testing & Demo
@@ -169,10 +164,13 @@ The system includes realistic test data generators that create:
 ### Load Testing
 ```bash
 # Generate 10,000 test transactions
-python tests/load/generate_transactions.py --count 10000
+python data/generators/transaction_generator.py --count 10000 --fraud-rate 0.02
 
-# Run load test against API
-python tests/load/api_load_test.py --rps 100 --duration 300
+# Run comprehensive load test
+python tests/load/api_load_test.py --url $API_ENDPOINT --users 50 --duration 300
+
+# Test fraud detection specifically
+python tests/load/api_load_test.py --test-type fraud
 ```
 
 ## 💰 Cost Optimization
@@ -184,8 +182,8 @@ python tests/load/api_load_test.py --rps 100 --duration 300
 - **CloudWatch**: Basic monitoring free
 
 ### Estimated Monthly Costs
-- **Development**: $20-40/month
-- **Production**: $100-200/month (with Redshift)
+- **Development**: $20-50/month
+- **Production**: $100-200/month (with optional Redshift)
 - **Cost Controls**: Automatic scaling, lifecycle policies, reserved capacity
 
 ## 🔒 Security Features
@@ -209,6 +207,20 @@ python tests/load/api_load_test.py --rps 100 --duration 300
 - System performance degradation
 - Cost threshold breaches
 - Security event notifications
+
+## 🎯 One-Click Deployment
+
+### Quick Deploy (Recommended)
+```bash
+# Clone and deploy everything in one command
+git clone https://github.com/cookiee01/securebank-transaction-pipeline.git
+cd securebank-transaction-pipeline
+chmod +x setup.sh quick-deploy.sh
+./quick-deploy.sh
+```
+
+### Manual Deployment
+See [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) for detailed step-by-step instructions.
 
 ## 🤝 Contributing
 
