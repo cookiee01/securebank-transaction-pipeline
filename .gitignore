@@ -1,0 +1,46 @@
+# AWS
+*.pem
+.aws/
+terraform.tfstate*
+terraform.tfvars
+*.tfplan
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.env
+.venv
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Output files
+*.json
+*.csv
+output/
